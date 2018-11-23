@@ -10,7 +10,8 @@ class AlbaException extends Exception
 }
 
 
-class AlbaService {
+class AlbaService
+{
     const BASE_URL = 'https://partner.rficb.ru/';
     const CURL_TIMEOUT = 45;
 
@@ -39,21 +40,19 @@ class AlbaService {
      * @param string $argSeparator разделитель
      * @return string
      */
-    protected function _http_build_query_rfc_3986($queryData, $argSeparator='&')
+    protected function _http_build_query_rfc_3986($queryData, $argSeparator = '&')
     {
         $r = '';
         $queryData = (array) $queryData;
-        if(!empty($queryData))
-            {
-                foreach($queryData as $k=>$queryVar)
-                    {
-                        $r .= $argSeparator;
-                        $r .= $k;
-                        $r .= '=';
-                        $r .= rawurlencode($queryVar);
-                    }
+        if (!empty($queryData)) {
+            foreach ($queryData as $k => $queryVar) {
+                    $r .= $argSeparator;
+                    $r .= $k;
+                    $r .= '=';
+                    $r .= rawurlencode($queryVar);
             }
-        return trim($r,$argSeparator);
+        }
+        return trim($r, $argSeparator);
     }
 
     /**
@@ -65,7 +64,7 @@ class AlbaService {
      * @param string $skipPort если в url нестандартный порт, участвует ли он в подписи
      * @return string
      */
-    public function sign($method, $url, $params, $secretKey, $skipPort=False)
+    public function sign($method, $url, $params, $secretKey, $skipPort = false)
     {
         ksort($params, SORT_LOCALE_STRING);
 
@@ -82,20 +81,22 @@ class AlbaService {
 
         $method = strtoupper($method);
 
-        $data = implode("\n",
-                        array(
-                            $method,
-                            $host,
-                            $path,
-                            $this->_http_build_query_rfc_3986($params)
-                        )
+        $data = implode(
+            "\n",
+            array(
+                $method,
+                $host,
+                $path,
+                $this->_http_build_query_rfc_3986($params)
+            )
         );
 
         $signature = base64_encode(
-            hash_hmac("sha256",
-                      "{$data}",
-                      "{$secretKey}",
-                      TRUE
+            hash_hmac(
+                "sha256",
+                "{$data}",
+                "{$secretKey}",
+                true
             )
         );
 
@@ -109,7 +110,7 @@ class AlbaService {
      * @throw AlbaException
      * @return array
      */
-    protected function _curl($url, $post=False)
+    protected function _curl($url, $post = false)
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -119,7 +120,7 @@ class AlbaService {
 
         if ($post) {
             $query = http_build_query($post);
-            curl_setopt($ch, CURLOPT_POST, TRUE);
+            curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $query);
             $this->_log('info', "Отправлен POST запрос: $url, с параметрами: $query");
         } else {
@@ -127,7 +128,7 @@ class AlbaService {
         }
         $result = curl_exec($ch);
 
-        if ($result === False) {
+        if ($result === false) {
             $msg = curl_error($ch);
             $this->_log('error', "Не удалось выполнить запрос: $msg");
             throw new AlbaException("Ошибка подключения к удаленному серверу", 'curl');
@@ -172,9 +173,15 @@ class AlbaService {
      * @throw AlbaException
      * @return array
      */
-    public function initPayment($pay_type, $cost, $name, $email, $phone,
-                                $order_id=False, $commission='partner')
-    {
+    public function initPayment(
+        $pay_type,
+        $cost,
+        $name,
+        $email,
+        $phone,
+        $order_id = false,
+        $commission = 'partner'
+    ) {
         $fields = array(
             "cost" => $cost,
             "name" => $name,
@@ -186,7 +193,7 @@ class AlbaService {
             "service_id" => $this->service_id,
             "version" => "2.0"
         );
-        if ($order_id !== False) {
+        if ($order_id !== false) {
             $fields['order_id'] = $order_id;
         }
 
@@ -230,7 +237,7 @@ class AlbaService {
      * @param string bool $test - проводить ли тестовый возврат
      * @param string mixed $reason - причина возврата
      */
-    public function refund($tid, $amount=False, $test=False, $reason=False)
+    public function refund($tid, $amount = false, $test = false, $reason = false)
     {
         $url = static::BASE_URL . "alba/refund/";
         $fields = array("version" => "2.0",
@@ -292,20 +299,20 @@ class AlbaService {
             'service_id',
             'order_id',
             'type',
-            'cost',
-            'income_total',
-            'income',
+            //'cost',
+            //'income_total',
+            //'income',
             'partner_income',
             'system_income',
-            'command',
-            'phone_number',
-            'email',
-            'resultStr',
-            'date_created',
-            'version',
+            //'command',
+            //'phone_number',
+            //'email',
+            //'resultStr',
+            //'date_created',
+            //'version',
         );
         $params = array();
-        foreach($order as $field) {
+        foreach ($order as $field) {
             if (isset($post[$field])) {
                 $params[] = $post[$field];
             }
@@ -316,7 +323,8 @@ class AlbaService {
 }
 
 
-class AlbaCallback {
+class AlbaCallback
+{
 
     /**
      * @param array $services список сервисов от которых ожидаются обратные вызовы
@@ -324,7 +332,7 @@ class AlbaCallback {
     public function __construct($services)
     {
         $this->services = array();
-        foreach($services as $service) {
+        foreach ($services as $service) {
             $this->services[$service->service_id] = $service;
         }
     }
@@ -397,5 +405,4 @@ class AlbaCallback {
     public function callbackRefund($data)
     {
     }
-
 }
