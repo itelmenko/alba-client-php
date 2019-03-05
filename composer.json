@@ -1,5 +1,5 @@
 {
-    "name": "mrkody/alba-client-php",
+    "name": "itelmenko/alba-client-php",
     "description": "Alba Client",
     "keywords": [
         "Alba Client",
@@ -17,8 +17,8 @@
     },
     "authors": [
         {
-            "name": "mrkody",
-            "email": "kody1994@mail.ru"
+            "name": "Igor Telmenko",
+            "email": "igor-telmenko@yandex.ru"
         }
     ]
 }
