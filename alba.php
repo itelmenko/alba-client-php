@@ -3,7 +3,7 @@
 
 class AlbaException extends Exception
 {
-    public function __construct($message, $code)
+    public function __construct($message, $code = NULL)
     {
         $this->code = $code;
         parent::__construct($message);
