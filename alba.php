@@ -254,6 +254,33 @@ class AlbaService
     }
 
     /**
+     * Запрос результата прохождения 3Ds
+     * @param $tid
+     * @param $emitentResponse Данные, пришедшие от банка-эмитента в виде JSON-encoded словаря
+     * @return array
+     * @throws AlbaException
+     */
+    public function ask3Ds($tid, $emitentResponse) {
+        $fields = array(
+            "service_id" => $this->service_id,
+            "tid" => $tid,
+            "emitent_response" => $emitentResponse,
+            "version" => "2.0"
+        );
+        $url = static::BASE_URL . "alba/ack3ds/";
+
+        $fields['check'] = $this->sign(
+            "POST",
+            $url,
+            $fields,
+            $this->secret
+        );
+
+        $answer = $this->_curl($url, $fields);
+        return $answer;
+    }
+
+    /**
      * @brief Получение информации о транзакции
      * @param int $tid идентификатор транзакции
      * @return array
