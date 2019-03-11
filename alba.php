@@ -45,13 +45,27 @@ class RecurrentParams
 
 }
 
+/**
+ * Интерфейс логгера
+ */
+interface AlbaLogger {
+    public function write($level, $message);
+}
 
+/**
+ * Основной класс для взаимодействия с API
+ */
 class AlbaService
 {
     const BASE_URL = 'https://partner.rficb.ru/';
     const CARD_TOKEN_URL = 'https://secure.rficb.ru/cardtoken/';
     const CARD_TOKEN_TEST_URL = 'https://test.rficb.ru/cardtoken/';
     const CURL_TIMEOUT = 45;
+
+    /**
+     * @var AlbaLogger|null
+     */
+    protected $logHandler = NULL;
 
     /**
      * @param integer $service_id идентификатор сервиса
@@ -63,6 +77,10 @@ class AlbaService
         $this->secret = $secret;
     }
 
+    public function setLogHandler(AlbaLogger $handler) {
+        $this->logHandler = $handler;
+    }
+
     /**
      * @brief Логгирование событий, предназначено для переопределения
      * @param string $level уровень debug, info или error
@@ -70,7 +88,9 @@ class AlbaService
      */
     protected function _log($level, $message)
     {
-        // echo $message . "\n";
+        if(!empty($this->logHandler)) {
+            $this->logHandler->write($level, $message);
+        }
     }
 
     /**
@@ -167,6 +187,8 @@ class AlbaService
         }
         $result = curl_exec($ch);
 
+        $this->_log('info', "Результат: $result");
+
         if ($result === False) {
             $msg = curl_error($ch);
             $this->_log('error', "Не удалось выполнить запрос: $msg");
@@ -177,8 +199,8 @@ class AlbaService
         $answer = json_decode($result);
 
         if ($answer->status === 'error') {
-            $msg = property_exists($answer, 'msg')?$answer->msg:$answer->message;
-            $code = property_exists($answer, 'code')?$answer->code:'unknown';
+            $msg = property_exists($answer, 'msg') ? $answer->msg : $answer->message ?? '';
+            $code = property_exists($answer, 'code') ? $answer->code : 'unknown';
             $this->_log('error', "$msg ($code)");
             throw new AlbaException($msg, $code);
         } else {
