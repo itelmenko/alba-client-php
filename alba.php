@@ -199,8 +199,8 @@ class AlbaService
         $answer = json_decode($result);
 
         if ($answer->status === 'error') {
-            $msg = property_exists($answer, 'msg') ? $answer->msg : $answer->message ?? '';
-            $code = property_exists($answer, 'code') ? $answer->code : 'unknown';
+            $msg = $answer->error ?? $answer->msg ?? $answer->message ?? '';
+            $code = $answer->code ?? 'unknown';
             $this->_log('error', "$msg ($code)");
             throw new AlbaException($msg, $code);
         } else {
