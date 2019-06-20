@@ -230,14 +230,18 @@ class AlbaService
      * @param string $cost сумма платежа
      * @param string $name наименование товара
      * @param string $email e-mail покупателя
-     * @param string $order_id идентификатор заказа
-     * @throw AlbaException
+     * @param boolean|string $order_id идентификатор заказа
+     * @param boolean|string $card_token токен карты
+     * @param boolean|string $recurrent_params параметры цикличных платежей
+     * @param array $extra доп. параметры
+     * @throws
      * @return array
      */
     public function initPayment($pay_type, $cost, $name, $email, $phone,
                                 $order_id=False, $commission='partner',
                                 $card_token=False,
-                                $recurrent_params=False)
+                                $recurrent_params=False,
+                                $extra = NULL)
     {
         $fields = array(
             "cost" => $cost,
@@ -260,6 +264,10 @@ class AlbaService
 
         if ($recurrent_params !== False) {
             $fields = array_merge($fields, $recurrent_params->fields);
+        }
+
+        if(!empty($extra)) {
+            $fields = array_merge($fields, $extra);
         }
 
         $url = static::BASE_URL . "alba/input/";
